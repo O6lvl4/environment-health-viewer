@@ -1,5 +1,8 @@
-import type { HourlySeries } from "./api.js";
-import { nearestHourIndex } from "./api.js";
+/**
+ * 気圧チャート (純粋: WeatherHourly + 現在時刻 → SVG ノード)。
+ */
+import type { WeatherHourly } from "../domain/conditions/series.js";
+import { nearestHourIndex } from "../domain/shared/temporal.js";
 
 export type ChartOptions = {
   width?: number;
@@ -8,20 +11,20 @@ export type ChartOptions = {
 
 const NS = "http://www.w3.org/2000/svg";
 
-export function renderPressureChart(
-  hourly: HourlySeries,
+export const renderPressureChart = (
+  hourly: WeatherHourly,
   now: Date,
   opts: ChartOptions = {},
-): SVGSVGElement {
+): SVGSVGElement => {
   const width = opts.width ?? 680;
   const height = opts.height ?? 180;
   const pad = { l: 40, r: 12, t: 16, b: 22 };
 
   const idx = nearestHourIndex(hourly.time, now);
   const start = Math.max(0, idx - 24);
-  const end = Math.min(hourly.pressure_msl.length, idx + 24);
+  const end = Math.min(hourly.pressure.length, idx + 24);
   const times = hourly.time.slice(start, end);
-  const pressures = hourly.pressure_msl.slice(start, end);
+  const pressures = hourly.pressure.slice(start, end) as ReadonlyArray<number>;
   const presentIdx = idx - start;
 
   const innerW = width - pad.l - pad.r;
@@ -43,7 +46,6 @@ export function renderPressureChart(
   const fontFamily = "system-ui, sans-serif";
   const axisColor = "currentColor";
 
-  // ---- 横グリッド + Y軸ラベル
   const gridSteps = 3;
   for (let i = 0; i <= gridSteps; i++) {
     const v = minP + (range * i) / gridSteps;
@@ -69,7 +71,6 @@ export function renderPressureChart(
     svg.appendChild(label);
   }
 
-  // ---- 「現在」垂直線
   if (presentIdx >= 0 && presentIdx < pressures.length) {
     const x = xAt(presentIdx);
     const nowLine = document.createElementNS(NS, "line");
@@ -93,7 +94,6 @@ export function renderPressureChart(
     svg.appendChild(nowLabel);
   }
 
-  // ---- 折れ線
   const pathD = pressures
     .map((p, i) => `${i === 0 ? "M" : "L"}${xAt(i).toFixed(2)} ${yAt(p).toFixed(2)}`)
     .join(" ");
@@ -106,7 +106,6 @@ export function renderPressureChart(
   path.setAttribute("stroke-linecap", "round");
   svg.appendChild(path);
 
-  // ---- 塗り
   const areaD =
     pressures
       .map((p, i) => `${i === 0 ? "M" : "L"}${xAt(i).toFixed(2)} ${yAt(p).toFixed(2)}`)
@@ -119,7 +118,6 @@ export function renderPressureChart(
   area.setAttribute("fill-opacity", "0.12");
   svg.appendChild(area);
 
-  // ---- X軸の時刻ラベル
   const labelHours = [-24, -12, 0, 12, 24];
   for (const h of labelHours) {
     const i = presentIdx + h;
@@ -138,4 +136,4 @@ export function renderPressureChart(
   }
 
   return svg;
-}
+};

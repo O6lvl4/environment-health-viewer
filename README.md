@@ -21,16 +21,58 @@
 - **現在 (Now)** に最も近い時刻のスナップショットをリスク判定の起点とする
 - 各リスクは独立した **メトリクス (Metric)** として算出され、横断する **総合状態 (System State)** に集約される
 
-### 2. 境界づけられたコンテキスト
+### 2. アーキテクチャ (Hexagonal / Ports & Adapters)
 
-| Context | 担当 | 主なファイル |
+```
+src/
+  domain/              ← 純粋なドメイン層 (fetch/DOM ゼロ)
+    shared/            Result, Brand, RiskLevel, units, temporal
+    location/          Coordinate, Location, Prefecture
+    conditions/        WeatherSnapshot, Conditions, weather-code
+    risk/              Metric, Assessment, metrics/{migraine,heat,...}
+    warnings/          Severity, ActiveWarning, WarningSet, OfficeCode
+    solar/             SolarCycle
+  application/         ← ユースケース層
+    ports.ts           PositionProvider / WeatherForecastProvider 等の interface
+    refresh-dashboard.ts   全panel更新の orchestrator
+    dashboard-state.ts     init|loading|ready|error の判別共用体
+  infrastructure/      ← 外部API/Browser API のアダプタ
+    open-meteo-{forecast,air-quality}.ts
+    jma-warnings.ts, bigdatacloud-geocoder.ts, browser-geolocation.ts, twemoji.ts
+  presentation/        ← DOM 描画
+    renderers.ts, dom-refs.ts, status.ts, chart.ts, level-classes.ts, format.ts
+  main.ts              ← Composition Root のみ
+```
+
+| 層 | 依存方向 | 責務 |
 |---|---|---|
-| Location | Geolocation 取得 + 逆ジオ | `location.ts` |
-| Acquisition | 外部 API への気象/大気質取得 | `api.ts` |
-| Conditions | 現時点の素データの集約 | `now.ts` |
-| Risk Assessment | 各種リスクメトリクスの算出 | `risk.ts` |
-| Warnings | 気象庁警報・注意報の取得と分類 | `warnings.ts` |
-| Presentation | UI 描画と状態表示 | `main.ts`, `chart.ts`, `twemoji.ts` |
+| `domain/` | 何にも依存しない | 値オブジェクト・集約・ドメインサービス。`Result` で失敗を返す |
+| `application/` | domain にだけ依存 | ユースケースを ports 越しに表現する |
+| `infrastructure/` | domain + application/ports に依存 | 外部 API / Browser API を ports に適合させる adapter |
+| `presentation/` | domain + application に依存 | 状態 → DOM の変換。pure に近い書き込み専用関数 |
+| `main.ts` | 全レイヤ | 依存注入 + 状態ループの司令塔 |
+
+### 2.5 「2026 イケてる」要素
+
+- **Branded types**: `Hpa`, `Celsius`, `Percent`, `UvIndex`, `Latitude`, `OfficeCode` 等の primitives を `& { __brand }` で型安全化。`X.of(n)` がバリデーション付き factory。
+- **Result<T,E>**: 例外を投げず判別共用体で失敗を表現。ドメインに throw が漏れない。
+- **判別共用体 DashboardState**: `init | loading | ready | error` を型で網羅。
+- **Ports & Adapters**: ドメインが interface に依存、infra が実装。テストではメモリ実装を差し替える。
+- `readonly` / `as const` / `satisfies` を一貫して使用。
+- 副作用は composition root と infrastructure に閉じ込め、ドメインは純関数。
+
+### 2.6 テスト
+
+- **Vitest** で domain + application 層を網羅 (60+ tests)
+- 各リスクメトリクスは閾値境界・単調性・観測量を検証
+- ユースケース `refreshDashboard` はインメモリ Ports で完全モックして経路を検証
+- ブラウザ依存 (DOM/fetch) は infrastructure に閉じているため、ドメイン層はノードでそのまま走る
+
+```sh
+npm test           # CI 走行
+npm run test:watch # 開発時
+npm run test:cov   # カバレッジ
+```
 
 ### 3. 値オブジェクト
 
