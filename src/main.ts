@@ -17,6 +17,7 @@ import {
 } from "./risk.js";
 import { fetchJmaWarnings, type WarningResult } from "./warnings.js";
 import { twemojiImg } from "./twemoji.js";
+import { currentConditions } from "./now.js";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -40,6 +41,16 @@ const solarSection = $<HTMLElement>("solar");
 const solarSunrise = $<HTMLSpanElement>("solar-sunrise");
 const solarSunset = $<HTMLSpanElement>("solar-sunset");
 const solarDaylen = $<HTMLSpanElement>("solar-daylen");
+
+const nowSection = $<HTMLElement>("now");
+const nowMeta = $<HTMLSpanElement>("now-meta");
+const nowTemp = $<HTMLSpanElement>("now-temp");
+const nowTempSub = $<HTMLSpanElement>("now-temp-sub");
+const nowCondIcon = $<HTMLSpanElement>("now-cond-icon");
+const nowCondLabel = $<HTMLSpanElement>("now-cond-label");
+const nowHumid = $<HTMLSpanElement>("now-humid");
+const nowRain = $<HTMLSpanElement>("now-rain");
+const nowRainSub = $<HTMLSpanElement>("now-rain-sub");
 
 const pressureSection = $<HTMLElement>("pressure");
 const pressureChart = $<HTMLDivElement>("pressure-chart");
@@ -115,6 +126,7 @@ async function run(): Promise<void> {
     const metrics = buildMetrics(weather, air, now);
 
     renderSummary(metrics);
+    renderNow(weather, now);
     renderCards(metrics);
     renderSolar(weather);
     renderPressure(weather.hourly, now);
@@ -222,6 +234,20 @@ function renderCards(metrics: Metric[]): void {
     `;
     cardsEl.appendChild(card);
   }
+}
+
+function renderNow(weather: WeatherResponse, now: Date): void {
+  const c = currentConditions(weather.hourly, weather.daily, now);
+  nowSection.hidden = false;
+  nowMeta.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())} 時点`;
+  nowTemp.textContent = `${c.tempC.toFixed(1)}℃`;
+  nowTempSub.textContent = `↑${c.todayMax.toFixed(0)} ↓${c.todayMin.toFixed(0)}`;
+  nowCondIcon.innerHTML = twemojiImg(c.weatherEmoji);
+  nowCondLabel.textContent = c.weatherLabel;
+  nowHumid.textContent = `RH ${c.humidity.toFixed(0)}%`;
+  nowRain.textContent = `${c.rainProbNext6h.toFixed(0)}%`;
+  nowRainSub.textContent =
+    c.precipNow > 0 ? `現在 ${c.precipNow.toFixed(1)}mm/h` : "next 6h";
 }
 
 function renderSolar(weather: WeatherResponse): void {

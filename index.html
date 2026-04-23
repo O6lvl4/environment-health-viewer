@@ -33,6 +33,33 @@
         <p id="summary-message" class="m-0 px-3 pt-[10px] pb-3 text-[14px] text-text font-sans"></p>
       </section>
 
+      <section id="now" class="my-[10px] rounded-[4px] border border-line bg-panel" hidden>
+        <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">
+          <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">NOW/COND</span>
+          <span id="now-meta" class="text-[11px] tracking-[0.06em] text-text-dim"></span>
+        </div>
+        <div class="grid grid-cols-3 gap-[6px] px-3 py-[10px]">
+          <div class="flex flex-col gap-[2px]">
+            <span class="text-[10px] tracking-[0.18em] text-text-mute">TEMP</span>
+            <span id="now-temp" class="font-mono text-lg font-semibold text-text tabular-nums">--℃</span>
+            <span id="now-temp-sub" class="font-mono text-[10.5px] text-text-mute tabular-nums">↑-- ↓--</span>
+          </div>
+          <div class="flex flex-col gap-[2px]">
+            <span class="text-[10px] tracking-[0.18em] text-text-mute">COND</span>
+            <span class="flex items-center gap-[6px]">
+              <span id="now-cond-icon" class="text-[20px] leading-none"></span>
+              <span id="now-cond-label" class="font-sans text-[14px] text-text">--</span>
+            </span>
+            <span id="now-humid" class="font-mono text-[10.5px] text-text-mute tabular-nums">RH --%</span>
+          </div>
+          <div class="flex flex-col gap-[2px]">
+            <span class="text-[10px] tracking-[0.18em] text-text-mute">RAIN</span>
+            <span id="now-rain" class="font-mono text-lg font-semibold text-text tabular-nums">--%</span>
+            <span id="now-rain-sub" class="font-mono text-[10.5px] text-text-mute tabular-nums">next 6h</span>
+          </div>
+        </div>
+      </section>
+
       <section id="warnings" class="my-[10px] rounded-[4px] border border-line bg-panel" hidden>
         <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">
           <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">JMA/ALERTS</span>

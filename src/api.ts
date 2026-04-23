@@ -6,6 +6,8 @@ export type HourlySeries = {
   temperature_2m: number[];
   relative_humidity_2m: number[];
   weathercode: number[];
+  precipitation: number[];
+  precipitation_probability: number[];
 };
 
 export type DailySeries = {
@@ -48,7 +50,7 @@ export async function fetchWeather(loc: Location): Promise<WeatherResponse> {
   url.searchParams.set("longitude", String(loc.longitude));
   url.searchParams.set(
     "hourly",
-    "pressure_msl,temperature_2m,relative_humidity_2m,weathercode",
+    "pressure_msl,temperature_2m,relative_humidity_2m,weathercode,precipitation,precipitation_probability",
   );
   url.searchParams.set(
     "daily",
