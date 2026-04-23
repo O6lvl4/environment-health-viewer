@@ -8,14 +8,14 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23000%22/><text y=%22.92em%22 x=%22.05em%22 font-family=%22monospace%22 font-size=%2280%22 fill=%22%2300ffa3%22>%23</text></svg>" />
   </head>
   <body>
-    <main id="app" class="max-w-[760px] mx-auto px-[14px] pt-4 pb-12">
+    <main id="app" class="max-w-[760px] mx-auto pt-4 px-[max(14px,env(safe-area-inset-left))] pr-[max(14px,env(safe-area-inset-right))] pb-[calc(3rem+env(safe-area-inset-bottom))]">
       <header class="mb-[14px] border-b border-line pb-3">
         <div class="flex items-end justify-between gap-3">
           <div class="flex items-baseline gap-[10px] flex-wrap">
             <span class="text-[10px] tracking-[0.3em] text-accent bg-accent/10 px-[6px] py-[2px] border border-accent-dim">ENV/HEALTH</span>
             <h1 class="m-0 font-mono text-xl font-bold tracking-[0.12em] text-text">MATRIX <span class="text-[11px] text-text-mute tracking-[0.05em] ml-1">v0.1</span></h1>
           </div>
-          <button id="refresh" class="w-8 h-8 rounded-[4px] border border-line-strong bg-panel text-accent cursor-pointer text-base font-mono leading-none transition-colors hover:border-accent hover:bg-panel-2 disabled:opacity-50 disabled:cursor-not-allowed" title="再取得" aria-label="再取得">↻</button>
+          <button id="refresh" class="shrink-0 w-11 h-11 rounded-[4px] border border-line-strong bg-panel text-accent cursor-pointer text-lg font-mono leading-none transition-colors hover:border-accent hover:bg-panel-2 active:bg-panel-2 active:border-accent disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation" title="再取得" aria-label="再取得">↻</button>
         </div>
         <div class="flex flex-wrap gap-y-1 gap-x-3 mt-[10px] text-[11px] text-text-dim tracking-[0.06em]">
           <span id="status-geo" class="seg">GEO ──</span>
@@ -38,7 +38,7 @@
           <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">NOW/COND</span>
           <span id="now-meta" class="text-[11px] tracking-[0.06em] text-text-dim"></span>
         </div>
-        <div class="grid grid-cols-3 gap-[6px] px-3 py-[10px]">
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(96px,1fr))] gap-x-3 gap-y-3 px-3 py-[10px]">
           <div class="flex flex-col gap-[2px]">
             <span class="text-[10px] tracking-[0.18em] text-text-mute">TEMP</span>
             <span id="now-temp" class="font-mono text-lg font-semibold text-text tabular-nums">--℃</span>
@@ -46,9 +46,9 @@
           </div>
           <div class="flex flex-col gap-[2px]">
             <span class="text-[10px] tracking-[0.18em] text-text-mute">COND</span>
-            <span class="flex items-center gap-[6px]">
+            <span class="flex items-center gap-[6px] flex-wrap">
               <span id="now-cond-icon" class="text-[20px] leading-none"></span>
-              <span id="now-cond-label" class="font-sans text-[14px] text-text">--</span>
+              <span id="now-cond-label" class="font-sans text-[13px] text-text break-keep">--</span>
             </span>
             <span id="now-humid" class="font-mono text-[10.5px] text-text-mute tabular-nums">RH --%</span>
           </div>
@@ -72,7 +72,7 @@
         <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">
           <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">SOLAR/CYCLE</span>
         </div>
-        <div class="grid grid-cols-3 gap-[6px] px-3 py-[10px]">
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(96px,1fr))] gap-x-3 gap-y-3 px-3 py-[10px]">
           <div class="flex flex-col gap-[2px]">
             <span class="text-[10px] tracking-[0.18em] text-text-mute">SUNRISE</span>
             <span id="solar-sunrise" class="font-mono text-lg font-semibold text-text tabular-nums">--:--</span>
@@ -88,7 +88,7 @@
         </div>
       </section>
 
-      <section id="cards" class="grid [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))] gap-2 my-[10px]"></section>
+      <section id="cards" class="grid grid-cols-2 gap-2 my-[10px] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"></section>
 
       <section id="pressure" class="my-[10px] rounded-[4px] border border-line bg-panel" hidden>
         <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">

@@ -50,6 +50,13 @@
     font-size: 14px;
     -webkit-font-smoothing: antialiased;
     letter-spacing: 0.01em;
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    touch-action: manipulation;
+    overscroll-behavior-y: none;
   }
   a {
     color: var(--color-accent);
@@ -58,6 +65,9 @@
   a:hover {
     color: white;
     border-bottom-color: white;
+  }
+  a:active {
+    color: white;
   }
 }
 
