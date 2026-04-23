@@ -195,7 +195,48 @@ classDiagram
   buildAssessment ..> Assessment : creates
 ```
 
-各 `assess*` 関数は内部で `observe*` (純粋な観測量計算) と「閾値→RiskLevel 判定」に分かれる。
+### 4.1 Specification + RiskPolicy
+
+各メトリクスの閾値判定は **Policy パターン** で抽象化されている。
+
+```mermaid
+classDiagram
+  class Specification~T~ {
+    <<function type>>
+    (subject: T) =&gt; boolean
+    +and(...specs)
+    +or(...specs)
+    +not(spec)
+  }
+  class ThresholdRule~T~ {
+    +level: "mid"|"high"|"danger"
+    +when: Specification~T~
+  }
+  class RiskPolicy~T~ {
+    +rules: ThresholdRule~T~[]
+  }
+  class evaluatePolicy {
+    <<domain service>>
+    +(policy, subject): RiskLevel
+  }
+
+  RiskPolicy "1" *-- "*" ThresholdRule
+  ThresholdRule --> Specification
+  evaluatePolicy ..> RiskPolicy
+```
+
+各 `assess*` 関数は3段に分割される:
+
+```
+observe*(input) → Observation       純粋な観測量抽出 (テスト容易)
+evaluatePolicy(policy, obs) → Level  Policy 駆動の判定 (Policy 単体テスト可)
+NOTES[level](obs) → string           level + obs から表示文字列を生成
+```
+
+これにより:
+- 観測ロジックと閾値ルールが独立にテスト可能 (`policies.test.ts` 参照)
+- 閾値を実行時に差し替え可能 (`assessMigraine(h, now, customPolicy)`)
+- 「ある閾値の根拠」がコードの一箇所に集約される
 
 ## 5. Warnings Context
 

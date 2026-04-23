@@ -64,6 +64,8 @@ src/
 - **Result<T,E>**: 例外を投げず判別共用体で失敗を表現。ドメインに throw が漏れない。
 - **判別共用体 DashboardState**: `init | loading | ready | error` を型で網羅。
 - **Ports & Adapters**: ドメインが interface に依存、infra が実装。テストではメモリ実装を差し替える。
+- **Specification + RiskPolicy**: 各リスクメトリクスは `observe* → Policy → NOTES` の3段に分離。`Specification` 述語は `and / or / not` で合成可能、Policy は閾値ルール集として独立にテストできる。
+- **アーキテクチャテスト**: `dependency-cruiser` で層間の依存規約を CI で機械的に強制。`domain → infrastructure` のような違反を書いた瞬間にビルドが落ちる。
 - `readonly` / `as const` / `satisfies` を一貫して使用。
 - 副作用は composition root と infrastructure に閉じ込め、ドメインは純関数。
 

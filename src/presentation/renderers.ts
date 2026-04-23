@@ -11,7 +11,7 @@ import type { WeatherHourly } from "../domain/conditions/series.js";
 import { Severity } from "../domain/warnings/severity.js";
 import { LEVEL_BADGE, LEVEL_BAR, LEVEL_BORDER, LEVEL_TAG } from "./level-classes.js";
 import { renderPressureChart } from "./chart.js";
-import { twemojiImg } from "../infrastructure/twemoji.js";
+import { twemojiImg } from "./twemoji.js";
 import { escapeHtml, formatHm, formatJmaTime, pad2 } from "./format.js";
 
 const SEVERITY_TAG: Record<Severity, { text: string; cls: string }> = {

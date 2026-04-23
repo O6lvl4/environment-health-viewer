@@ -137,7 +137,28 @@ const toSnapshot = (raw: Raw): WeatherSnapshot => ({
 });
 ```
 
-## 6. なぜこの構造か
+## 6. アーキテクチャ規約の機械的検証
+
+層境界の依存ルールは [`dependency-cruiser`](../.dependency-cruiser.cjs) で **CI で必須化** している。違反コードを書いた瞬間にビルドが落ちる。
+
+```sh
+npm run lint:arch          # 依存規約チェック
+npm run lint:arch:graph    # 依存グラフ SVG を docs/ に生成 (要 graphviz)
+```
+
+主な禁止ルール (`severity: error`):
+
+| ルール | 内容 |
+|---|---|
+| `domain-must-stay-pure` | `domain/` から `application/` `infrastructure/` `presentation/` `main.ts` への参照禁止 |
+| `application-no-infra-or-presentation` | `application/` から `infrastructure/` `presentation/` への参照禁止 |
+| `infrastructure-no-presentation` | `infrastructure/` から `presentation/` への参照禁止 |
+| `presentation-no-infrastructure` | `presentation/` から `infrastructure/` への参照禁止 |
+| `no-circular` | 循環依存禁止 |
+
+`type` インポートも `tsPreCompilationDeps: true` で追跡対象 (型だけの依存も層境界違反になる)。
+
+## 7. なぜこの構造か
 
 - **ドメインがテスト容易**: pure function の集合なので Vitest が node 環境で 1秒以内に 60+ テストを実行
 - **API 差し替えが安全**: Open-Meteo を別の気象 API に変えても変更は infrastructure 内に閉じる
