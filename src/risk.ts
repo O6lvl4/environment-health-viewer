@@ -1,4 +1,4 @@
-import type { AirHourly, HourlySeries, WeatherResponse, AirResponse } from "./api.js";
+import type { AirHourly, HourlySeries, WeatherResponse, AirResponse, DailySeries } from "./api.js";
 import { nearestHourIndex } from "./api.js";
 
 export type Level = "low" | "mid" | "high" | "danger";
@@ -287,6 +287,86 @@ export function summaryMessage(metrics: Metric[]): { level: Level; message: stri
   return { level, message };
 }
 
+/**
+ * 寒暖差リスク。past_days=1 / forecast_days=2 を取得しているので
+ * daily は [yesterday, today, tomorrow] の3点ある想定。
+ * - 当日の日較差 (max - min)
+ * - 前日との最高気温差
+ */
+export function tempSwingRisk(daily: DailySeries): Metric {
+  const todayIdx = daily.time.length >= 3 ? 1 : 0;
+  const tMax = daily.temperature_2m_max[todayIdx];
+  const tMin = daily.temperature_2m_min[todayIdx];
+  const ySwing = daily.temperature_2m_max[todayIdx - 1];
+  const diurnal = tMax - tMin;
+  const dod = ySwing != null ? Math.abs(tMax - ySwing) : 0;
+  const swing = Math.max(diurnal, dod);
+
+  let level: Level;
+  let note: string;
+  if (swing >= 13) {
+    level = "danger";
+    note = `日較差 ${diurnal.toFixed(1)}℃ / 前日比 ${dod.toFixed(1)}℃。自律神経への負担大`;
+  } else if (swing >= 10) {
+    level = "high";
+    note = `日較差 ${diurnal.toFixed(1)}℃ / 前日比 ${dod.toFixed(1)}℃。寒暖差疲労に注意`;
+  } else if (swing >= 7) {
+    level = "mid";
+    note = `日較差 ${diurnal.toFixed(1)}℃ / 前日比 ${dod.toFixed(1)}℃`;
+  } else {
+    level = "low";
+    note = `日較差 ${diurnal.toFixed(1)}℃ / 前日比 ${dod.toFixed(1)}℃`;
+  }
+
+  return {
+    id: "swing",
+    title: "寒暖差",
+    icon: "🌡️",
+    level,
+    value: `${tMin.toFixed(0)}↔${tMax.toFixed(0)}`,
+    unit: "℃",
+    note,
+  };
+}
+
+/**
+ * 黄砂 (dust)。Open-Meteo の dust は μg/m³。
+ * 日本の黄砂目視判定の目安: 100μg/m³ で薄い黄砂、500μg/m³ で濃い黄砂。
+ * ただし PM10 と相関があるため数値感は地域差あり。
+ */
+export function dustRisk(air: AirHourly, now: Date): Metric | null {
+  if (!air.dust) return null;
+  const idx = nearestHourIndex(air.time, now);
+  const v = air.dust[idx];
+  if (v == null || Number.isNaN(v)) return null;
+
+  let level: Level;
+  let note: string;
+  if (v >= 500) {
+    level = "danger";
+    note = "視界に影響するレベル。外出は控えめに";
+  } else if (v >= 200) {
+    level = "high";
+    note = "明確な黄砂飛来。敏感な方は屋外活動を控える";
+  } else if (v >= 80) {
+    level = "mid";
+    note = "薄い黄砂が観測される量";
+  } else {
+    level = "low";
+    note = "ほぼ影響なし";
+  }
+
+  return {
+    id: "dust",
+    title: "黄砂",
+    icon: "🌫️",
+    level,
+    value: v.toFixed(0),
+    unit: "μg/m³",
+    note,
+  };
+}
+
 export function buildMetrics(
   weather: WeatherResponse,
   air: AirResponse,
@@ -294,11 +374,35 @@ export function buildMetrics(
 ): Metric[] {
   const list: Metric[] = [
     migraineRisk(weather.hourly, now),
+    tempSwingRisk(weather.daily),
     heatstrokeRisk(weather.hourly, now),
     uvRisk(weather),
     airQualityRisk(air.hourly, now),
   ];
+  const dust = dustRisk(air.hourly, now);
+  if (dust) list.push(dust);
   const pollen = pollenRisk(air.hourly, now);
   if (pollen) list.push(pollen);
   return list;
+}
+
+/**
+ * 太陽運行情報。SAD対策・朝散歩のタイミング判断用。
+ * 当日の sunrise/sunset から日長を算出。
+ */
+export function solarInfo(daily: DailySeries): {
+  sunrise: Date;
+  sunset: Date;
+  dayLength: { hours: number; minutes: number };
+} | null {
+  const idx = daily.time.length >= 3 ? 1 : 0;
+  const sr = daily.sunrise[idx];
+  const ss = daily.sunset[idx];
+  if (!sr || !ss) return null;
+  const sunrise = new Date(sr);
+  const sunset = new Date(ss);
+  const lenMs = sunset.getTime() - sunrise.getTime();
+  const hours = Math.floor(lenMs / 3_600_000);
+  const minutes = Math.floor((lenMs % 3_600_000) / 60_000);
+  return { sunrise, sunset, dayLength: { hours, minutes } };
 }

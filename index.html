@@ -3,44 +3,78 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0d10" />
-    <title>環境ヘルスチェック</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌡️</text></svg>" />
+    <meta name="theme-color" content="#06090c" />
+    <title>ENV/HEALTH MATRIX</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23000%22/><text y=%22.92em%22 x=%22.05em%22 font-family=%22monospace%22 font-size=%2280%22 fill=%22%2300ffa3%22>%23</text></svg>" />
   </head>
   <body>
-    <main id="app">
-      <header class="hero">
-        <div class="hero-row">
-          <h1>環境ヘルスチェック</h1>
-          <button id="refresh" class="icon-btn" title="再取得" aria-label="再取得">↻</button>
+    <main id="app" class="max-w-[760px] mx-auto px-[14px] pt-4 pb-12">
+      <header class="mb-[14px] border-b border-line pb-3">
+        <div class="flex items-end justify-between gap-3">
+          <div class="flex items-baseline gap-[10px] flex-wrap">
+            <span class="text-[10px] tracking-[0.3em] text-accent bg-accent/10 px-[6px] py-[2px] border border-accent-dim">ENV/HEALTH</span>
+            <h1 class="m-0 font-mono text-xl font-bold tracking-[0.12em] text-text">MATRIX <span class="text-[11px] text-text-mute tracking-[0.05em] ml-1">v0.1</span></h1>
+          </div>
+          <button id="refresh" class="w-8 h-8 rounded-[4px] border border-line-strong bg-panel text-accent cursor-pointer text-base font-mono leading-none transition-colors hover:border-accent hover:bg-panel-2 disabled:opacity-50 disabled:cursor-not-allowed" title="再取得" aria-label="再取得">↻</button>
         </div>
-        <p id="location" class="muted">位置情報を取得中…</p>
+        <div class="flex flex-wrap gap-y-1 gap-x-3 mt-[10px] text-[11px] text-text-dim tracking-[0.06em]">
+          <span id="status-geo" class="seg">GEO ──</span>
+          <span id="status-tz" class="seg">TZ ──</span>
+          <span id="status-time" class="seg">TS ──:──:──</span>
+          <span id="status-text" class="seg seg-status">INIT</span>
+        </div>
       </header>
 
-      <section id="summary" class="summary card" hidden>
-        <div class="summary-headline">
-          <span class="summary-label">総合リスク</span>
-          <span id="summary-level" class="level-badge">—</span>
+      <section id="summary" class="my-[10px] rounded-[4px] border border-line bg-panel" hidden>
+        <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">
+          <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">SYS/STATE</span>
+          <span id="summary-level" class="state-badge font-mono text-[11px] tracking-[0.18em] px-2 py-[3px] border border-line-strong bg-panel text-text-dim">—</span>
         </div>
-        <p id="summary-message" class="summary-message"></p>
+        <p id="summary-message" class="m-0 px-3 pt-[10px] pb-3 text-[14px] text-text font-sans"></p>
       </section>
 
-      <section id="cards" class="cards"></section>
-
-      <section id="pressure" class="card pressure-card" hidden>
-        <header class="card-header">
-          <h2>気圧の推移（過去24h〜先24h）</h2>
-        </header>
-        <div id="pressure-chart"></div>
-        <p class="muted small" id="pressure-note"></p>
+      <section id="warnings" class="my-[10px] rounded-[4px] border border-line bg-panel" hidden>
+        <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">
+          <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">JMA/ALERTS</span>
+          <span id="warnings-meta" class="text-[11px] tracking-[0.06em] text-text-dim"></span>
+        </div>
+        <ul id="warnings-list" class="list-none m-0 p-0"></ul>
       </section>
 
-      <section id="status" class="status">
-        <p id="status-text" class="muted">待機中…</p>
+      <section id="solar" class="my-[10px] rounded-[4px] border border-line bg-panel" hidden>
+        <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">
+          <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">SOLAR/CYCLE</span>
+        </div>
+        <div class="grid grid-cols-3 gap-[6px] px-3 py-[10px]">
+          <div class="flex flex-col gap-[2px]">
+            <span class="text-[10px] tracking-[0.18em] text-text-mute">SUNRISE</span>
+            <span id="solar-sunrise" class="font-mono text-lg font-semibold text-text tabular-nums">--:--</span>
+          </div>
+          <div class="flex flex-col gap-[2px]">
+            <span class="text-[10px] tracking-[0.18em] text-text-mute">SUNSET</span>
+            <span id="solar-sunset" class="font-mono text-lg font-semibold text-text tabular-nums">--:--</span>
+          </div>
+          <div class="flex flex-col gap-[2px]">
+            <span class="text-[10px] tracking-[0.18em] text-text-mute">DAYLEN</span>
+            <span id="solar-daylen" class="font-mono text-lg font-semibold text-text tabular-nums">-h --m</span>
+          </div>
+        </div>
       </section>
 
-      <footer class="footer muted small">
-        <p>データ提供: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> ／ 偏頭痛・熱中症リスクは気象データからの推定値で、医学的助言ではありません。</p>
+      <section id="cards" class="grid [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))] gap-2 my-[10px]"></section>
+
+      <section id="pressure" class="my-[10px] rounded-[4px] border border-line bg-panel" hidden>
+        <div class="flex items-center justify-between gap-[10px] px-3 py-2 bg-panel-2 border-b border-line">
+          <span class="text-[10.5px] font-semibold tracking-[0.18em] text-accent">PRESS/MSL · -24h ⇄ +24h</span>
+          <span id="pressure-current" class="font-mono text-[11px] tracking-[0.06em] text-text-dim">— hPa</span>
+        </div>
+        <div id="pressure-chart" class="px-2 pt-[6px] text-text-dim"></div>
+        <p id="pressure-note" class="m-0 px-3 pt-[6px] pb-3 text-[12.5px] text-text-dim font-sans"></p>
+      </section>
+
+      <footer class="mt-6 text-center text-[11px] text-text-mute leading-[1.7] tracking-[0.04em]">
+        <p class="my-[2px]">SRC: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://www.jma.go.jp/bosai/" target="_blank" rel="noopener">JMA bosai</a> · <a href="https://www.bigdatacloud.com/" target="_blank" rel="noopener">BigDataCloud</a></p>
+        <p class="my-[2px]">※ 表示は気象データからの推定であり医学的助言ではありません</p>
       </footer>
     </main>
     <script type="module" src="/src/main.ts"></script>

@@ -29,14 +29,13 @@ export type AirHourly = {
   pm10: number[];
   european_aqi: number[];
   uv_index: number[];
+  dust?: number[];
   alder_pollen?: number[];
   birch_pollen?: number[];
   grass_pollen?: number[];
   mugwort_pollen?: number[];
   olive_pollen?: number[];
   ragweed_pollen?: number[];
-  japanese_cedar_pollen?: number[];
-  japanese_cypress_pollen?: number[];
 };
 
 export type AirResponse = {
@@ -74,6 +73,7 @@ export async function fetchAirQuality(loc: Location): Promise<AirResponse> {
       "pm10",
       "european_aqi",
       "uv_index",
+      "dust",
       "alder_pollen",
       "birch_pollen",
       "grass_pollen",
