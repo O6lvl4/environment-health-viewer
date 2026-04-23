@@ -4,6 +4,12 @@
 
 公開: https://o6lvl4.github.io/environment-health-viewer/
 
+設計詳細・図解は [`docs/`](./docs/README.md) に分割:
+- [docs/architecture.md](./docs/architecture.md) — Hexagonal の層構造図と依存ルール
+- [docs/domain-model.md](./docs/domain-model.md) — 各 Bounded Context のクラス図
+- [docs/use-cases.md](./docs/use-cases.md) — `refreshDashboard` のシーケンス + 状態遷移
+- [docs/extending.md](./docs/extending.md) — 新メトリクス・データソース・パネルの追加手順
+
 ---
 
 ## ドメイン用語集 (Ubiquitous Language)
