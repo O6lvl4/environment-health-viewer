@@ -16,6 +16,7 @@ import {
   type Metric,
 } from "./risk.js";
 import { fetchJmaWarnings, type WarningResult } from "./warnings.js";
+import { twemojiImg } from "./twemoji.js";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -208,7 +209,7 @@ function renderCards(metrics: Metric[]): void {
     card.innerHTML = `
       <div class="flex items-center justify-between gap-2">
         <span class="flex items-center gap-[6px] text-[10.5px] tracking-[0.18em] text-text-dim uppercase">
-          <span class="text-[13px]">${m.icon}</span>${escapeHtml(m.title)}
+          <span class="text-[14px] leading-none">${twemojiImg(m.icon)}</span>${escapeHtml(m.title)}
         </span>
         <span class="font-mono text-[9.5px] tracking-[0.18em] px-[5px] py-px border border-current ${LEVEL_TAG[m.level]}">
           ${escapeHtml(levelLabel(m.level).toUpperCase())}
